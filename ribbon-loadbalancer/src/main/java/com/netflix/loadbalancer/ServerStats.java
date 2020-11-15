@@ -45,10 +45,7 @@ public class ServerStats {
     private static final int DEFAULT_PUBLISH_INTERVAL =  60 * 1000; // = 1 minute
     private static final int DEFAULT_BUFFER_SIZE = 60 * 1000; // = 1000 requests/sec for 1 minute
 
-    private final UnboxedIntProperty connectionFailureThreshold;
-    private final UnboxedIntProperty circuitTrippedTimeoutFactor;
-    private final UnboxedIntProperty maxCircuitTrippedTimeout;
-    private final UnboxedIntProperty activeRequestsCountTimeout;
+    private final ConfigStats configStats;
 
     private static final double[] PERCENTS = makePercentValues();
     
@@ -85,17 +82,11 @@ public class ServerStats {
     private volatile long firstConnectionTimestamp = 0;
 
     public ServerStats() {
-        connectionFailureThreshold = new UnboxedIntProperty(Property.of(LoadBalancerStats.CONNECTION_FAILURE_COUNT_THRESHOLD.defaultValue()));
-        circuitTrippedTimeoutFactor = new UnboxedIntProperty(LoadBalancerStats.CIRCUIT_TRIP_TIMEOUT_FACTOR_SECONDS.defaultValue());
-        maxCircuitTrippedTimeout = new UnboxedIntProperty(LoadBalancerStats.CIRCUIT_TRIP_MAX_TIMEOUT_SECONDS.defaultValue());
-        activeRequestsCountTimeout = new UnboxedIntProperty(LoadBalancerStats.ACTIVE_REQUESTS_COUNT_TIMEOUT.defaultValue());
+        configStats = new ConfigStats();
     }
 
-    public ServerStats(LoadBalancerStats lbStats) {
-        maxCircuitTrippedTimeout = lbStats.getCircuitTripMaxTimeoutSeconds();
-        circuitTrippedTimeoutFactor = lbStats.getCircuitTrippedTimeoutFactor();
-        connectionFailureThreshold = lbStats.getConnectionFailureCountThreshold();
-        activeRequestsCountTimeout = lbStats.getActiveRequestsCountTimeout();
+    public ServerStats(ConfigStats cfgStats) {
+        configStats = cfgStats;
     }
     
     /**
@@ -241,7 +232,7 @@ public class ServerStats {
         int count = activeRequestsCount.get();
         if (count == 0) {
             return 0;
-        } else if (currentTime - lastActiveRequestsCountChangeTimestamp > activeRequestsCountTimeout.get() * 1000 || count < 0) {
+        } else if (currentTime - lastActiveRequestsCountChangeTimestamp > configStats.getActiveRequestsCountTimeout() * 1000 || count < 0) {
             activeRequestsCount.set(0);
             return 0;            
         } else {
@@ -285,14 +276,14 @@ public class ServerStats {
     
     private long getCircuitBreakerBlackoutPeriod() {
         int failureCount = successiveConnectionFailureCount.get();
-        int threshold = connectionFailureThreshold.get();
+        int threshold = configStats.getConnectionFailureThreshold();
         if (failureCount < threshold) {
             return 0;
         }
         int diff = Math.min(failureCount - threshold, 16);
-        int blackOutSeconds = (1 << diff) * circuitTrippedTimeoutFactor.get();
-        if (blackOutSeconds > maxCircuitTrippedTimeout.get()) {
-            blackOutSeconds = maxCircuitTrippedTimeout.get();
+        int blackOutSeconds = (1 << diff) * configStats.getCircuitTrippedTimeoutFactor();
+        if (blackOutSeconds > configStats.getMaxCircuitTrippedTimeout()) {
+            blackOutSeconds = configStats.getMaxCircuitTrippedTimeout();
         }
         return blackOutSeconds * 1000L;
     }
