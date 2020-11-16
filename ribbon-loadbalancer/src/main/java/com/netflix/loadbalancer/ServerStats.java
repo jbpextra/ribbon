@@ -19,10 +19,6 @@ package com.netflix.loadbalancer;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import com.netflix.client.config.CommonClientConfigKey;
-import com.netflix.client.config.IClientConfigKey;
-import com.netflix.client.config.Property;
-import com.netflix.client.config.UnboxedIntProperty;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 import com.netflix.stats.distribution.DataDistribution;
