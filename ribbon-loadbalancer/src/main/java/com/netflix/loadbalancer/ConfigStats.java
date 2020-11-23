@@ -1,11 +1,13 @@
 package com.netflix.loadbalancer;
 
+import com.google.common.base.Preconditions;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.UnboxedIntProperty;
+import com.netflix.client.IClientConfigAware;
 
-public class ConfigStats {
+public class ConfigStats implements IClientConfigAware{
     public static final IClientConfigKey<Integer> ACTIVE_REQUESTS_COUNT_TIMEOUT = new CommonClientConfigKey<Integer>(
             "niws.loadbalancer.serverStats.activeRequestsCount.effectiveWindowSeconds", 60 * 10) {};
 
@@ -35,23 +37,23 @@ public class ConfigStats {
 
     private UnboxedIntProperty activeRequestsCountTimeout = new UnboxedIntProperty(ACTIVE_REQUESTS_COUNT_TIMEOUT.defaultValue());
 
-    public static ConfigStats initConfigStatsWithNiwsConfig(IClientConfig clientConfig, String name) {
-        ConfigStats configStats = new ConfigStats();
-        configStats.connectionFailureThreshold = new UnboxedIntProperty(
+    public void initWithNiwsConfig(IClientConfig clientConfig) {
+        String name = clientConfig.getClientName();
+        Preconditions.checkArgument(name != null, "IClientConfig#getClientName() must not be null");
+        this.connectionFailureThreshold = new UnboxedIntProperty(
                 clientConfig.getGlobalProperty(CONNECTION_FAILURE_COUNT_THRESHOLD.format(name))
                         .fallbackWith(clientConfig.getGlobalProperty(DEFAULT_CONNECTION_FAILURE_COUNT_THRESHOLD))
         );
-        configStats.circuitTrippedTimeoutFactor = new UnboxedIntProperty(
+        this.circuitTrippedTimeoutFactor = new UnboxedIntProperty(
                 clientConfig.getGlobalProperty(CIRCUIT_TRIP_TIMEOUT_FACTOR_SECONDS.format(name))
                         .fallbackWith(clientConfig.getGlobalProperty(DEFAULT_CIRCUIT_TRIP_TIMEOUT_FACTOR_SECONDS))
         );
-        configStats.maxCircuitTrippedTimeout = new UnboxedIntProperty(
+        this.maxCircuitTrippedTimeout = new UnboxedIntProperty(
                 clientConfig.getGlobalProperty(CIRCUIT_TRIP_MAX_TIMEOUT_SECONDS.format(name))
                         .fallbackWith(clientConfig.getGlobalProperty(DEFAULT_CIRCUIT_TRIP_MAX_TIMEOUT_SECONDS))
         );
-        configStats.activeRequestsCountTimeout = new UnboxedIntProperty(
+        this.activeRequestsCountTimeout = new UnboxedIntProperty(
                 clientConfig.getGlobalProperty(ACTIVE_REQUESTS_COUNT_TIMEOUT));
-        return configStats;
     }
 
     int getConnectionFailureThreshold() {

@@ -17,7 +17,7 @@
 */
 package com.netflix.loadbalancer;
 
-import com.google.common.base.Preconditions;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -95,8 +95,7 @@ public class LoadBalancerStats implements IClientConfigAware {
     @Override
     public void initWithNiwsConfig(IClientConfig clientConfig) {
         this.name = clientConfig.getClientName();
-        Preconditions.checkArgument(name != null, "IClientConfig#getCLientName() must not be null");
-        this.configStats = ConfigStats.initConfigStatsWithNiwsConfig(clientConfig, name);
+        this.configStats.initWithNiwsConfig(clientConfig);
     }
 
 
