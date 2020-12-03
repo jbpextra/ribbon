@@ -23,12 +23,10 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.netflix.client.IClientConfigAware;
-import com.netflix.client.config.ClientConfigFactory;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.monitor.Monitors;
-import com.netflix.loadbalancer.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
