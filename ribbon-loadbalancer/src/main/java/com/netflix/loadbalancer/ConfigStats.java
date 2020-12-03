@@ -37,6 +37,7 @@ public class ConfigStats implements IClientConfigAware{
 
     private UnboxedIntProperty activeRequestsCountTimeout = new UnboxedIntProperty(ACTIVE_REQUESTS_COUNT_TIMEOUT.defaultValue());
 
+    @Override
     public void initWithNiwsConfig(IClientConfig clientConfig) {
         String name = clientConfig.getClientName();
         Preconditions.checkArgument(name != null, "IClientConfig#getClientName() must not be null");
